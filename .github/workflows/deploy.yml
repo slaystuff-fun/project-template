@@ -15,6 +15,11 @@ jobs:
           username: pfrncs
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            cd /opt/slaystuff/projects/${{ github.event.repository.name }}
-            git pull
-            docker compose up --build -d
+            REPO_DIR="/opt/slaystuff/projects/${{ github.event.repository.name }}"
+            if [ -d "$REPO_DIR/.git" ]; then
+              git -C "$REPO_DIR" pull
+            else
+              rm -rf "$REPO_DIR"
+              git clone git@github.com:slaystuff-fun/${{ github.event.repository.name }}.git "$REPO_DIR"
+            fi
+            docker compose -f "$REPO_DIR/docker-compose.yml" up --build -d
